@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Piutang Pelanggan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0d6efd;
+            --dark-blue: #0a58ca;
+            --light-blue: #e7f1ff;
+            --secondary-blue: #4dabf7;
+            --accent-blue: #1864ab;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background-color: var(--primary-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background-color: var(--primary-blue);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dark-blue);
+            border-color: var(--dark-blue);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+        
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .table th {
+            background-color: var(--light-blue);
+            color: var(--accent-blue);
+            font-weight: 600;
+            border-top: none;
+        }
+        
+        .table td {
+            vertical-align: middle;
+        }
+        
+        .badge {
+            font-size: 0.8em;
+        }
+        
+        .balance-positive {
+            color: #198754;
+            font-weight: bold;
+        }
+        
+        .balance-negative {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .filter-section {
+            background-color: var(--light-blue);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .stats-card h5 {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .stats-card h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        
+        .modal-header {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+        
+        .footer {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 15px 0;
+            margin-top: 30px;
+        }
+        
+        .customer-link {
+            color: var(--primary-blue);
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .customer-link:hover {
+            text-decoration: underline;
+        }
+        
+        .active-filter {
+            background-color: var(--secondary-blue);
+            color: white;
+        }
+        
+        .view-toggle {
+            margin-bottom: 15px;
+        }
+        
+        .view-toggle .btn {
+            margin-right: 5px;
+        }
+        
+        .attachment-link {
+            color: #6c757d;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .attachment-link:hover {
+            color: var(--primary-blue);
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                font-size: 12px;
+            }
+            
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            
+            .print-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .print-title {
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            
+            .print-date {
+                font-size: 12px;
+                color: #666;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark no-print">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-cash-stack"></i> Piutang Pelanggan PPI PT RURA SEJAHTERA GRUP
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light me-2" onclick="backupData()">
+                            <i class="bi bi-download"></i> Backup
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light me-2" onclick="confirmReset()">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-danger" onclick="logout()">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Stats Cards -->
+        <div class="row no-print">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h5>Total Pelanggan</h5>
+                    <h3 id="totalCustomers">0</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h5>Total Piutang</h5>
+                    <h3 id="totalCredit">Rp 0</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h5>Total Pembayaran</h5>
+                    <h3 id="totalPayment">Rp 0</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h5>Sisa Piutang</h5>
+                    <h3 id="totalDebt">Rp 0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Form -->
+        <div class="row no-print">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-person-plus"></i> Tambah Pelanggan
+                    </div>
+                    <div class="card-body">
+                        <form id="customerForm">
+                            <div class="mb-3">
+                                <label for="customerName" class="form-label">Nama Pelanggan</label>
+                                <input type="text" class="form-control" id="customerName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customerPhone" class="form-label">Nomor Telepon</label>
+                                <input type="tel" class="form-control" id="customerPhone">
+                            </div>
+                            <div class="mb-3">
+                                <label for="customerAddress" class="form-label">Alamat</label>
+                                <textarea class="form-control" id="customerAddress" rows="2"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Tambah Pelanggan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Form -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-cash-coin"></i> Tambah Transaksi
+                    </div>
+                    <div class="card-body">
+                        <form id="transactionForm">
+                            <div class="mb-3">
+                                <label for="selectCustomer" class="form-label">Pilih Pelanggan</label>
+                                <select class="form-select" id="selectCustomer" required>
+                                    <option value="">-- Pilih Pelanggan --</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transactionDivision" class="form-label">Divisi</label>
+                                <select class="form-select" id="transactionDivision" required>
+                                    <option value="">-- Pilih Divisi --</option>
+                                    <option value="RMM">RMM</option>
+                                    <option value="BSL">BSL</option>
+                                    <option value="RP">RP</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transactionType" class="form-label">Jenis Transaksi</label>
+                                <select class="form-select" id="transactionType" required>
+                                    <option value="credit">Piutang</option>
+                                    <option value="payment">Pembayaran</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transactionAmount" class="form-label">Jumlah (Rp)</label>
+                                <input type="number" class="form-control" id="transactionAmount" min="0" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transactionDescription" class="form-label">Keterangan</label>
+                                <textarea class="form-control" id="transactionDescription" rows="2"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transactionAttachment" class="form-label">Lampiran (Opsional)</label>
+                                <input type="file" class="form-control" id="transactionAttachment" accept="image/*,.pdf,.doc,.docx">
+                                <small class="text-muted" id="attachmentFileName">Tidak ada file dipilih</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Tambah Transaksi
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history"></i> Riwayat Transaksi</span>
+                <div class="no-print">
+                    <button class="btn btn-sm btn-light" onclick="printCurrentView()">
+                        <i class="bi bi-printer"></i> Cetak
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- View Toggle -->
+                <div class="view-toggle no-print">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary active" id="detailViewBtn" onclick="showDetailView()">
+                            <i class="bi bi-list-ul"></i> Detail Transaksi
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="summaryViewBtn" onclick="showSummaryView()">
+                            <i class="bi bi-calculator"></i> Rekap Transaksi
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section no-print">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <label for="filterCustomer" class="form-label">Filter Pelanggan</label>
+                            <select class="form-select" id="filterCustomer">
+                                <option value="">Semua Pelanggan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="filterDivision" class="form-label">Filter Divisi</label>
+                            <select class="form-select" id="filterDivision">
+                                <option value="">Semua Divisi</option>
+                                <option value="RMM">RMM</option>
+                                <option value="BSL">BSL</option>
+                                <option value="RP">RP</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="filterType" class="form-label">Filter Jenis</label>
+                            <select class="form-select" id="filterType">
+                                <option value="">Semua Jenis</option>
+                                <option value="credit">Piutang</option>
+                                <option value="payment">Pembayaran</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="filterStartDate" class="form-label">Tanggal Mulai</label>
+                            <input type="date" class="form-control" id="filterStartDate">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="filterEndDate" class="form-label">Tanggal Selesai</label>
+                            <input type="date" class="form-control" id="filterEndDate">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button class="btn btn-primary" onclick="applyFilters()">
+                                <i class="bi bi-funnel"></i> Terapkan Filter
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="clearFilters()">
+                                <i class="bi bi-x-circle"></i> Hapus Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Filter Display -->
+                <div id="activeFilterDisplay" class="mb-3 no-print" style="display: none;">
+                    <span class="badge bg-secondary me-2">Filter Aktif: <span id="activeFilterText"></span></span>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+                        <i class="bi bi-x"></i> Hapus
+                    </button>
+                </div>
+
+                <!-- Transactions Table -->
+                <div id="detailView">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Pelanggan</th>
+                                    <th>Divisi</th>
+                                    <th>Jenis</th>
+                                    <th>Jumlah</th>
+                                    <th>Keterangan</th>
+                                    <th>Lampiran</th>
+                                    <th>Sisa Piutang</th>
+                                    <th class="no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTable">
+                                <!-- Transactions will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Summary View -->
+                <div id="summaryView" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Nama Pelanggan</th>
+                                    <th>Total Piutang</th>
+                                    <th>Total Pembayaran</th>
+                                    <th>Sisa Piutang</th>
+                                    <th class="no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summaryTable">
+                                <!-- Summary will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Transaction Modal -->
+    <div class="modal fade" id="editTransactionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Transaksi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTransactionForm">
+                        <input type="hidden" id="editTransactionId">
+                        <div class="mb-3">
+                            <label for="editTransactionDivision" class="form-label">Divisi</label>
+                            <select class="form-select" id="editTransactionDivision" required>
+                                <option value="RMM">RMM</option>
+                                <option value="BSL">BSL</option>
+                                <option value="RP">RP</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTransactionType" class="form-label">Jenis Transaksi</label>
+                            <select class="form-select" id="editTransactionType" required>
+                                <option value="credit">Piutang</option>
+                                <option value="payment">Pembayaran</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTransactionAmount" class="form-label">Jumlah (Rp)</label>
+                            <input type="number" class="form-control" id="editTransactionAmount" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTransactionDescription" class="form-label">Keterangan</label>
+                            <textarea class="form-control" id="editTransactionDescription" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTransactionAttachment" class="form-label">Ganti Lampiran (Opsional)</label>
+                            <input type="file" class="form-control" id="editTransactionAttachment" accept="image/*,.pdf,.doc,.docx">
+                            <small class="text-muted" id="editAttachmentFileName">Biarkan kosong jika tidak ingin mengubah lampiran</small>
+                            <div id="currentAttachmentInfo" class="mt-2"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTransactionChanges()">
+                        <i class="bi bi-check-circle"></i> Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Detail Modal -->
+    <div class="modal fade" id="customerDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detail Transaksi Pelanggan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="customerDetailContent">
+                        <!-- Customer detail will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div class="modal fade" id="resetModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Konfirmasi Reset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin mereset semua transaksi? Tindakan ini tidak dapat dibatalkan.</p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Semua data pelanggan dan transaksi akan dihapus permanen.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" onclick="resetAllData()">
+                        <i class="bi bi-trash"></i> Reset Semua Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer no-print">
+        <div class="container text-center">
+            <p>apps created by @alyafta.id 2025</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Data Storage
+        let customers = JSON.parse(localStorage.getItem('customers')) || [];
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let currentView = 'detail'; // 'detail' or 'summary'
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCustomers();
+            loadTransactions();
+            updateStats();
+            updateCustomerSelects();
+            updateFilterCustomerSelect();
+            
+            // Add event listener for file input
+            document.getElementById('transactionAttachment').addEventListener('change', function() {
+                const fileName = this.files[0] ? this.files[0].name : 'Tidak ada file dipilih';
+                document.getElementById('attachmentFileName').textContent = fileName;
+            });
+            
+            // Add event listener for edit file input
+            document.getElementById('editTransactionAttachment').addEventListener('change', function() {
+                const fileName = this.files[0] ? this.files[0].name : 'Biarkan kosong jika tidak ingin mengubah lampiran';
+                document.getElementById('editAttachmentFileName').textContent = fileName;
+            });
+        });
+        
+        // Customer Form Submit
+        document.getElementById('customerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const customer = {
+                id: Date.now(),
+                name: document.getElementById('customerName').value,
+                phone: document.getElementById('customerPhone').value,
+                address: document.getElementById('customerAddress').value
+            };
+            
+            customers.push(customer);
+            localStorage.setItem('customers', JSON.stringify(customers));
+            
+            showToast('Pelanggan berhasil ditambahkan', 'success');
+            this.reset();
+            loadCustomers();
+            updateCustomerSelects();
+            updateFilterCustomerSelect();
+            updateStats();
+        });
+        
+        // Transaction Form Submit
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const attachmentFile = document.getElementById('transactionAttachment').files[0];
+            
+            function saveTransaction(attachmentData = null, attachmentName = null) {
+                const transaction = {
+                    id: Date.now(),
+                    customerId: parseInt(document.getElementById('selectCustomer').value),
+                    division: document.getElementById('transactionDivision').value,
+                    type: document.getElementById('transactionType').value,
+                    amount: parseFloat(document.getElementById('transactionAmount').value),
+                    description: document.getElementById('transactionDescription').value,
+                    date: new Date().toISOString(),
+                    attachment: attachmentData,
+                    attachmentName: attachmentName
+                };
+                
+                transactions.push(transaction);
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                
+                const customer = customers.find(c => c.id === transaction.customerId);
+                showToast(`Transaksi untuk ${customer.name} berhasil ditambahkan`, 'success');
+                
+                document.getElementById('transactionForm').reset();
+                document.getElementById('attachmentFileName').textContent = 'Tidak ada file dipilih';
+                
+                if (currentView === 'detail') {
+                    loadTransactions();
+                } else {
+                    loadSummary();
+                }
+                updateStats();
+            }
+            
+            if (attachmentFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    saveTransaction(e.target.result, attachmentFile.name);
+                };
+                reader.readAsDataURL(attachmentFile);
+            } else {
+                saveTransaction();
+            }
+        });
+        
+        // Load Customers
+        function loadCustomers() {
+            const table = document.getElementById('customersTable');
+            if (table) {
+                table.innerHTML = '';
+                customers.forEach(customer => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${customer.name}</td>
+                        <td>${customer.phone}</td>
+                        <td>${customer.address}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCustomer(${customer.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    table.appendChild(row);
+                });
+            }
+        }
+        
+        // Load Transactions
+        function loadTransactions(filteredTransactions = null) {
+            const table = document.getElementById('transactionsTable');
+            table.innerHTML = '';
+            
+            const dataToDisplay = filteredTransactions || transactions;
+            
+            // Sort transactions by date (newest first) for display
+            dataToDisplay.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            dataToDisplay.forEach(transaction => {
+                const customer = customers.find(c => c.id === transaction.customerId);
+                if (!customer) return;
+                
+                const date = new Date(transaction.date).toLocaleDateString('id-ID');
+                const typeBadge = transaction.type === 'credit' 
+                    ? '<span class="badge bg-primary">Piutang</span>' 
+                    : '<span class="badge bg-success">Pembayaran</span>';
+                
+                const amount = transaction.type === 'credit' 
+                    ? `<span class="text-danger">+Rp ${transaction.amount.toLocaleString('id-ID')}</span>` 
+                    : `<span class="text-success">-Rp ${transaction.amount.toLocaleString('id-ID')}</span>`;
+                
+                // Calculate RUNNING BALANCE for this customer up to this transaction
+                const customerTransactions = transactions.filter(t => t.customerId === transaction.customerId);
+                // Sort by date ascending to calculate running balance correctly
+                customerTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                let runningBalance = 0;
+                for (const ct of customerTransactions) {
+                    if (ct.type === 'credit') {
+                        runningBalance += ct.amount;
+                    } else {
+                        runningBalance -= ct.amount;
+                    }
+                    // Stop when we reach current transaction
+                    if (ct.id === transaction.id) {
+                        break;
+                    }
+                }
+                
+                const debtDisplay = runningBalance > 0 
+                    ? `<span class="balance-negative">Rp ${runningBalance.toLocaleString('id-ID')}</span>` 
+                    : `<span class="balance-positive">Lunas</span>`;
+                
+                // Create attachment link if exists
+                let attachmentDisplay = '-';
+                if (transaction.attachment && transaction.attachmentName) {
+                    attachmentDisplay = `<a href="${transaction.attachment}" download="${transaction.attachmentName}" class="attachment-link" title="Unduh lampiran">
+                        <i class="bi bi-paperclip"></i> ${transaction.attachmentName}
+                    </a>`;
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td><a href="#" class="customer-link" onclick="filterByCustomer(${transaction.customerId}, '${customer.name}'); return false;">${customer.name}</a></td>
+                    <td>${transaction.division || '-'}</td>
+                    <td>${typeBadge}</td>
+                    <td>${amount}</td>
+                    <td>${transaction.description || '-'}</td>
+                    <td>${attachmentDisplay}</td>
+                    <td>${debtDisplay}</td>
+                    <td class="no-print">
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editTransaction(${transaction.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTransaction(${transaction.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                table.appendChild(row);
+            });
+            
+            if (dataToDisplay.length === 0) {
+                table.innerHTML = '<tr><td colspan="9" class="text-center">Tidak ada transaksi</td></tr>';
+            }
+        }
+        
+        // Load Summary
+        function loadSummary() {
+            const table = document.getElementById('summaryTable');
+            table.innerHTML = '';
+            
+            // Group transactions by customer
+            const customerSummary = {};
+            
+            // Initialize customer summary with all customers
+            customers.forEach(customer => {
+                customerSummary[customer.id] = {
+                    name: customer.name,
+                    totalCredit: 0,
+                    totalPayment: 0
+                };
+            });
+            
+            // Calculate totals for each customer
+            transactions.forEach(transaction => {
+                if (!customerSummary[transaction.customerId]) {
+                    // This handles the case where a transaction exists for a customer not in the list
+                    const customer = customers.find(c => c.id === transaction.customerId);
+                    if (customer) {
+                        customerSummary[transaction.customerId] = {
+                            name: customer.name,
+                            totalCredit: 0,
+                            totalPayment: 0
+                        };
+                    } else {
+                        return; // Skip if customer not found
+                    }
+                }
+                
+                if (transaction.type === 'credit') {
+                    customerSummary[transaction.customerId].totalCredit += transaction.amount;
+                } else {
+                    customerSummary[transaction.customerId].totalPayment += transaction.amount;
+                }
+            });
+            
+            // Create table rows
+            Object.keys(customerSummary).forEach(customerId => {
+                const summary = customerSummary[customerId];
+                const remainingDebt = summary.totalCredit - summary.totalPayment;
+                
+                const debtDisplay = remainingDebt > 0 
+                    ? `<span class="balance-negative">Rp ${remainingDebt.toLocaleString('id-ID')}</span>` 
+                    : `<span class="balance-positive">Lunas</span>`;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><a href="#" class="customer-link" onclick="showCustomerDetail(${customerId}); return false;">${summary.name}</a></td>
+                    <td>Rp ${summary.totalCredit.toLocaleString('id-ID')}</td>
+                    <td>Rp ${summary.totalPayment.toLocaleString('id-ID')}</td>
+                    <td>${debtDisplay}</td>
+                    <td class="no-print">
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary" onclick="filterByCustomer(${customerId}, '${summary.name}')">
+                                <i class="bi bi-eye"></i> Lihat Detail
+                            </button>
+                        </div>
+                    </td>
+                `;
+                table.appendChild(row);
+            });
+            
+            if (Object.keys(customerSummary).length === 0) {
+                table.innerHTML = '<tr><td colspan="5" class="text-center">Tidak ada data pelanggan</td></tr>';
+            }
+        }
+        
+        // Show Customer Detail
+        function showCustomerDetail(customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (!customer) return;
+            
+            const customerTransactions = transactions.filter(t => t.customerId === customerId);
+            customerTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let totalCredit = 0;
+            let totalPayment = 0;
+            
+            customerTransactions.forEach(t => {
+                if (t.type === 'credit') {
+                    totalCredit += t.amount;
+                } else {
+                    totalPayment += t.amount;
+                }
+            });
+            
+            const remainingDebt = totalCredit - totalPayment;
+            
+            let transactionsHtml = '';
+            customerTransactions.forEach(transaction => {
+                const date = new Date(transaction.date).toLocaleDateString('id-ID');
+                const typeBadge = transaction.type === 'credit' 
+                    ? '<span class="badge bg-primary">Piutang</span>' 
+                    : '<span class="badge bg-success">Pembayaran</span>';
+                
+                const amount = transaction.type === 'credit' 
+                    ? `<span class="text-danger">+Rp ${transaction.amount.toLocaleString('id-ID')}</span>` 
+                    : `<span class="text-success">-Rp ${transaction.amount.toLocaleString('id-ID')}</span>`;
+                
+                // Create attachment link if exists
+                let attachmentDisplay = '-';
+                if (transaction.attachment && transaction.attachmentName) {
+                    attachmentDisplay = `<a href="${transaction.attachment}" download="${transaction.attachmentName}" class="attachment-link" title="Unduh lampiran">
+                        <i class="bi bi-paperclip"></i> ${transaction.attachmentName}
+                    </a>`;
+                }
+                
+                transactionsHtml += `
+                    <tr>
+                        <td>${date}</td>
+                        <td>${transaction.division || '-'}</td>
+                        <td>${typeBadge}</td>
+                        <td>${amount}</td>
+                        <td>${transaction.description || '-'}</td>
+                        <td>${attachmentDisplay}</td>
+                    </tr>
+                `;
+            });
+            
+            const detailContent = document.getElementById('customerDetailContent');
+            detailContent.innerHTML = `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h5>Informasi Pelanggan</h5>
+                        <p><strong>Nama:</strong> ${customer.name}</p>
+                        <p><strong>Telepon:</strong> ${customer.phone || '-'}</p>
+                        <p><strong>Alamat:</strong> ${customer.address || '-'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Ringkasan Transaksi</h5>
+                        <p><strong>Total Piutang:</strong> Rp ${totalCredit.toLocaleString('id-ID')}</p>
+                        <p><strong>Total Pembayaran:</strong> Rp ${totalPayment.toLocaleString('id-ID')}</p>
+                        <p><strong>Sisa Piutang:</strong> ${remainingDebt > 0 
+                            ? `<span class="balance-negative">Rp ${remainingDebt.toLocaleString('id-ID')}</span>` 
+                            : `<span class="balance-positive">Lunas</span>`}</p>
+                    </div>
+                </div>
+                <h5>Detail Transaksi</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Divisi</th>
+                                <th>Jenis</th>
+                                <th>Jumlah</th>
+                                <th>Keterangan</th>
+                                <th>Lampiran</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${transactionsHtml || '<tr><td colspan="6" class="text-center">Tidak ada transaksi</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
+            modal.show();
+        }
+        
+        // Update Customer Selects
+        function updateCustomerSelects() {
+            const select = document.getElementById('selectCustomer');
+            select.innerHTML = '<option value="">-- Pilih Pelanggan --</option>';
+            
+            customers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.name;
+                select.appendChild(option);
+            });
+        }
+        
+        // Update Filter Customer Select
+        function updateFilterCustomerSelect() {
+            const select = document.getElementById('filterCustomer');
+            select.innerHTML = '<option value="">Semua Pelanggan</option>';
+            
+            customers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.name;
+                select.appendChild(option);
+            });
+        }
+        
+        // View Toggle Functions
+        function showDetailView() {
+            currentView = 'detail';
+            document.getElementById('detailView').style.display = 'block';
+            document.getElementById('summaryView').style.display = 'none';
+            document.getElementById('detailViewBtn').classList.add('active');
+            document.getElementById('summaryViewBtn').classList.remove('active');
+            loadTransactions();
+        }
+        
+        function showSummaryView() {
+            currentView = 'summary';
+            document.getElementById('detailView').style.display = 'none';
+            document.getElementById('summaryView').style.display = 'block';
+            document.getElementById('detailViewBtn').classList.remove('active');
+            document.getElementById('summaryViewBtn').classList.add('active');
+            loadSummary();
+        }
+        
+        // Edit Transaction
+        function editTransaction(id) {
+            const transaction = transactions.find(t => t.id === id);
+            if (!transaction) return;
+            
+            document.getElementById('editTransactionId').value = transaction.id;
+            document.getElementById('editTransactionDivision').value = transaction.division;
+            document.getElementById('editTransactionType').value = transaction.type;
+            document.getElementById('editTransactionAmount').value = transaction.amount;
+            document.getElementById('editTransactionDescription').value = transaction.description;
+            
+            // Display current attachment info
+            const attachmentInfo = document.getElementById('currentAttachmentInfo');
+            if (transaction.attachment && transaction.attachmentName) {
+                attachmentInfo.innerHTML = `
+                    <div class="alert alert-info py-2">
+                        <i class="bi bi-paperclip"></i> Lampiran saat ini: <strong>${transaction.attachmentName}</strong>
+                        <a href="${transaction.attachment}" download="${transaction.attachmentName}" class="btn btn-sm btn-outline-primary ms-2">
+                            <i class="bi bi-download"></i> Unduh
+                        </a>
+                    </div>
+                `;
+            } else {
+                attachmentInfo.innerHTML = '';
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('editTransactionModal'));
+            modal.show();
+        }
+        
+        // Save Transaction Changes
+        function saveTransactionChanges() {
+            const id = parseInt(document.getElementById('editTransactionId').value);
+            const transactionIndex = transactions.findIndex(t => t.id === id);
+            
+            if (transactionIndex === -1) return;
+            
+            const attachmentFile = document.getElementById('editTransactionAttachment').files[0];
+            
+            function saveChanges(attachmentData = null, attachmentName = null) {
+                transactions[transactionIndex].division = document.getElementById('editTransactionDivision').value;
+                transactions[transactionIndex].type = document.getElementById('editTransactionType').value;
+                transactions[transactionIndex].amount = parseFloat(document.getElementById('editTransactionAmount').value);
+                transactions[transactionIndex].description = document.getElementById('editTransactionDescription').value;
+                
+                // Update attachment only if a new file is selected
+                if (attachmentData !== null) {
+                    transactions[transactionIndex].attachment = attachmentData;
+                    transactions[transactionIndex].attachmentName = attachmentName;
+                }
+                
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editTransactionModal'));
+                modal.hide();
+                
+                if (currentView === 'detail') {
+                    loadTransactions();
+                } else {
+                    loadSummary();
+                }
+                updateStats();
+                showToast('Transaksi berhasil diperbarui', 'success');
+            }
+            
+            if (attachmentFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    saveChanges(e.target.result, attachmentFile.name);
+                };
+                reader.readAsDataURL(attachmentFile);
+            } else {
+                saveChanges();
+            }
+        }
+        
+        // Delete Transaction
+        function deleteTransaction(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                
+                if (currentView === 'detail') {
+                    loadTransactions();
+                } else {
+                    loadSummary();
+                }
+                updateStats();
+                showToast('Transaksi berhasil dihapus', 'info');
+            }
+        }
+        
+        // Delete Customer
+        function deleteCustomer(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus pelanggan ini? Semua transaksi terkait juga akan dihapus.')) {
+                customers = customers.filter(c => c.id !== id);
+                transactions = transactions.filter(t => t.customerId !== id);
+                localStorage.setItem('customers', JSON.stringify(customers));
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                loadCustomers();
+                
+                if (currentView === 'detail') {
+                    loadTransactions();
+                } else {
+                    loadSummary();
+                }
+                updateCustomerSelects();
+                updateFilterCustomerSelect();
+                updateStats();
+                showToast('Pelanggan dan transaksi terkait berhasil dihapus', 'info');
+            }
+        }
+        
+        // Filter by Customer
+        function filterByCustomer(customerId, customerName) {
+            showDetailView(); // Switch to detail view
+            document.getElementById('filterCustomer').value = customerId;
+            applyFilters();
+            
+            // Show active filter
+            const activeFilterDisplay = document.getElementById('activeFilterDisplay');
+            const activeFilterText = document.getElementById('activeFilterText');
+            activeFilterDisplay.style.display = 'block';
+            activeFilterText.textContent = `Pelanggan: ${customerName}`;
+        }
+        
+        // Apply Filters
+        function applyFilters() {
+            const customerId = document.getElementById('filterCustomer').value;
+            const division = document.getElementById('filterDivision').value;
+            const type = document.getElementById('filterType').value;
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            
+            let filteredTransactions = [...transactions];
+            let filterTexts = [];
+            
+            if (customerId) {
+                filteredTransactions = filteredTransactions.filter(t => t.customerId == customerId);
+                const customer = customers.find(c => c.id == customerId);
+                filterTexts.push(`Pelanggan: ${customer.name}`);
+            }
+            
+            if (division) {
+                filteredTransactions = filteredTransactions.filter(t => t.division === division);
+                filterTexts.push(`Divisi: ${division}`);
+            }
+            
+            if (type) {
+                filteredTransactions = filteredTransactions.filter(t => t.type === type);
+                filterTexts.push(`Jenis: ${type === 'credit' ? 'Piutang' : 'Pembayaran'}`);
+            }
+            
+            if (startDate) {
+                filteredTransactions = filteredTransactions.filter(t => new Date(t.date) >= new Date(startDate));
+                filterTexts.push(`Dari: ${new Date(startDate).toLocaleDateString('id-ID')}`);
+            }
+            
+            if (endDate) {
+                filteredTransactions = filteredTransactions.filter(t => new Date(t.date) <= new Date(endDate + 'T23:59:59'));
+                filterTexts.push(`Sampai: ${new Date(endDate).toLocaleDateString('id-ID')}`);
+            }
+            
+            if (currentView === 'detail') {
+                loadTransactions(filteredTransactions);
+            } else {
+                // For summary view, we need to apply filters differently
+                // First get all customer IDs from filtered transactions
+                const filteredCustomerIds = [...new Set(filteredTransactions.map(t => t.customerId))];
+                
+                // Group transactions by customer from filtered data
+                const customerSummary = {};
+                
+                // Initialize customer summary with filtered customers
+                filteredCustomerIds.forEach(customerId => {
+                    const customer = customers.find(c => c.id == customerId);
+                    if (customer) {
+                        customerSummary[customerId] = {
+                            name: customer.name,
+                            totalCredit: 0,
+                            totalPayment: 0
+                        };
+                    }
+                });
+                
+                // Calculate totals for each customer from filtered transactions
+                filteredTransactions.forEach(transaction => {
+                    if (transaction.type === 'credit') {
+                        customerSummary[transaction.customerId].totalCredit += transaction.amount;
+                    } else {
+                        customerSummary[transaction.customerId].totalPayment += transaction.amount;
+                    }
+                });
+                
+                // Create table rows
+                const table = document.getElementById('summaryTable');
+                table.innerHTML = '';
+                
+                Object.keys(customerSummary).forEach(customerId => {
+                    const summary = customerSummary[customerId];
+                    const remainingDebt = summary.totalCredit - summary.totalPayment;
+                    
+                    const debtDisplay = remainingDebt > 0 
+                        ? `<span class="balance-negative">Rp ${remainingDebt.toLocaleString('id-ID')}</span>` 
+                        : `<span class="balance-positive">Lunas</span>`;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><a href="#" class="customer-link" onclick="showCustomerDetail(${customerId}); return false;">${summary.name}</a></td>
+                        <td>Rp ${summary.totalCredit.toLocaleString('id-ID')}</td>
+                        <td>Rp ${summary.totalPayment.toLocaleString('id-ID')}</td>
+                        <td>${debtDisplay}</td>
+                        <td class="no-print">
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary" onclick="filterByCustomer(${customerId}, '${summary.name}')">
+                                    <i class="bi bi-eye"></i> Lihat Detail
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    table.appendChild(row);
+                });
+                
+                if (Object.keys(customerSummary).length === 0) {
+                    table.innerHTML = '<tr><td colspan="5" class="text-center">Tidak ada data pelanggan</td></tr>';
+                }
+            }
+            
+            // Show active filter
+            const activeFilterDisplay = document.getElementById('activeFilterDisplay');
+            const activeFilterText = document.getElementById('activeFilterText');
+            if (filterTexts.length > 0) {
+                activeFilterDisplay.style.display = 'block';
+                activeFilterText.textContent = filterTexts.join(', ');
+            } else {
+                activeFilterDisplay.style.display = 'none';
+            }
+            
+            showToast('Filter diterapkan', 'info');
+        }
+        
+        // Clear Filters
+        function clearFilters() {
+            document.getElementById('filterCustomer').value = '';
+            document.getElementById('filterDivision').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            
+            document.getElementById('activeFilterDisplay').style.display = 'none';
+            
+            if (currentView === 'detail') {
+                loadTransactions();
+            } else {
+                loadSummary();
+            }
+            showToast('Filter dihapus', 'info');
+        }
+        
+        // Print Current View
+        function printCurrentView() {
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank');
+            
+            // Get current date
+            const currentDate = new Date().toLocaleDateString('id-ID');
+            
+            // Create HTML content for printing
+            let printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cetak Riwayat Transaksi</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            font-size: 12px;
+                        }
+                        .print-header {
+                            text-align: center;
+                            margin-bottom: 20px;
+                        }
+                        .print-title {
+                            font-size: 18px;
+                            font-weight: bold;
+                            margin-bottom: 5px;
+                        }
+                        .print-date {
+                            font-size: 12px;
+                            color: #666;
+                        }
+                        .table {
+                            border-collapse: collapse;
+                            width: 100%;
+                        }
+                        .table th, .table td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                        }
+                        .table th {
+                            background-color: #f2f2f2;
+                            text-align: left;
+                        }
+                        .balance-positive {
+                            color: #198754;
+                            font-weight: bold;
+                        }
+                        .balance-negative {
+                            color: #dc3545;
+                            font-weight: bold;
+                        }
+                        .badge {
+                            font-size: 0.8em;
+                            padding: 3px 6px;
+                        }
+                        .bg-primary {
+                            background-color: #0d6efd !important;
+                            color: white !important;
+                        }
+                        .bg-success {
+                            background-color: #198754 !important;
+                            color: white !important;
+                        }
+                        .text-danger {
+                            color: #dc3545 !important;
+                        }
+                        .text-success {
+                            color: #198754 !important;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-header">
+                        <div class="print-title">LAPORAN PIUTANG PELANGGAN</div>
+                        <div class="print-date">Tanggal Cetak: ${currentDate}</div>
+                    </div>
+            `;
+            
+            if (currentView === 'detail') {
+                // Add detail view content
+                printContent += `
+                    <h5>Detail Transaksi</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Pelanggan</th>
+                                <th>Divisi</th>
+                                <th>Jenis</th>
+                                <th>Jumlah</th>
+                                <th>Keterangan</th>
+                                <th>Lampiran</th>
+                                <th>Sisa Piutang</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                // Get current filtered transactions
+                const customerId = document.getElementById('filterCustomer').value;
+                const division = document.getElementById('filterDivision').value;
+                const type = document.getElementById('filterType').value;
+                const startDate = document.getElementById('filterStartDate').value;
+                const endDate = document.getElementById('filterEndDate').value;
+                
+                let filteredTransactions = [...transactions];
+                
+                if (customerId) {
+                    filteredTransactions = filteredTransactions.filter(t => t.customerId == customerId);
+                }
+                
+                if (division) {
+                    filteredTransactions = filteredTransactions.filter(t => t.division === division);
+                }
+                
+                if (type) {
+                    filteredTransactions = filteredTransactions.filter(t => t.type === type);
+                }
+                
+                if (startDate) {
+                    filteredTransactions = filteredTransactions.filter(t => new Date(t.date) >= new Date(startDate));
+                }
+                
+                if (endDate) {
+                    filteredTransactions = filteredTransactions.filter(t => new Date(t.date) <= new Date(endDate + 'T23:59:59'));
+                }
+                
+                // Sort transactions by date (newest first) for display
+                filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                filteredTransactions.forEach(transaction => {
+                    const customer = customers.find(c => c.id === transaction.customerId);
+                    if (!customer) return;
+                    
+                    const date = new Date(transaction.date).toLocaleDateString('id-ID');
+                    const typeBadge = transaction.type === 'credit' 
+                        ? '<span class="badge bg-primary">Piutang</span>' 
+                        : '<span class="badge bg-success">Pembayaran</span>';
+                    
+                    const amount = transaction.type === 'credit' 
+                        ? `<span class="text-danger">+Rp ${transaction.amount.toLocaleString('id-ID')}</span>` 
+                        : `<span class="text-success">-Rp ${transaction.amount.toLocaleString('id-ID')}</span>`;
+                    
+                    // Calculate RUNNING BALANCE for this customer up to this transaction
+                    const customerTransactions = transactions.filter(t => t.customerId === transaction.customerId);
+                    // Sort by date ascending to calculate running balance correctly
+                    customerTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    
+                    let runningBalance = 0;
+                    for (const ct of customerTransactions) {
+                        if (ct.type === 'credit') {
+                            runningBalance += ct.amount;
+                        } else {
+                            runningBalance -= ct.amount;
+                        }
+                        // Stop when we reach current transaction
+                        if (ct.id === transaction.id) {
+                            break;
+                        }
+                    }
+                    
+                    const debtDisplay = runningBalance > 0 
+                        ? `<span class="balance-negative">Rp ${runningBalance.toLocaleString('id-ID')}</span>` 
+                        : `<span class="balance-positive">Lunas</span>`;
+                    
+                    // Add attachment info to description
+                    let descriptionWithAttachment = transaction.description || '-';
+                    if (transaction.attachmentName) {
+                        descriptionWithAttachment += ` (Lampiran: ${transaction.attachmentName})`;
+                    }
+                    
+                    printContent += `
+                        <tr>
+                            <td>${date}</td>
+                            <td>${customer.name}</td>
+                            <td>${transaction.division || '-'}</td>
+                            <td>${typeBadge}</td>
+                            <td>${amount}</td>
+                            <td>${descriptionWithAttachment}</td>
+                            <td>${transaction.attachmentName || '-'}</td>
+                            <td>${debtDisplay}</td>
+                        </tr>
+                    `;
+                });
+                
+                if (filteredTransactions.length === 0) {
+                    printContent += '<tr><td colspan="9" class="text-center">Tidak ada transaksi</td></tr>';
+                }
+                
+                printContent += `
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                // Add summary view content
+                printContent += `
+                    <h5>Rekap Transaksi Per Pelanggan</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nama Pelanggan</th>
+                                <th>Total Piutang</th>
+                                <th>Total Pembayaran</th>
+                                <th>Sisa Piutang</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                // Get current filtered transactions
+                const customerId = document.getElementById('filterCustomer').value;
+                const division = document.getElementById('filterDivision').value;
+                const type = document.getElementById('filterType').value;
+                const startDate = document.getElementById('filterStartDate').value;
+                const endDate = document.getElementById('filterEndDate').value;
+                
+                let filteredTransactions = [...transactions];
+                
+                if (customerId) {
+                    filteredTransactions = filteredTransactions.filter(t => t.customerId == customerId);
+                }
+                
+                if (division) {
+                    filteredTransactions = filteredTransactions.filter(t => t.division === division);
+                }
+                
+                if (type) {
+                    filteredTransactions = filteredTransactions.filter(t => t.type === type);
+                }
+                
+                if (startDate) {
+                    filteredTransactions = filteredTransactions.filter(t => new Date(t.date) >= new Date(startDate));
+                }
+                
+                if (endDate) {
+                    filteredTransactions = filteredTransactions.filter(t => new Date(t.date) <= new Date(endDate + 'T23:59:59'));
+                }
+                
+                // Group transactions by customer
+                const customerSummary = {};
+                
+                // Initialize customer summary with all customers
+                customers.forEach(customer => {
+                    customerSummary[customer.id] = {
+                        name: customer.name,
+                        totalCredit: 0,
+                        totalPayment: 0
+                    };
+                });
+                
+                // Calculate totals for each customer from filtered transactions
+                filteredTransactions.forEach(transaction => {
+                    if (!customerSummary[transaction.customerId]) {
+                        // This handles the case where a transaction exists for a customer not in the list
+                        const customer = customers.find(c => c.id === transaction.customerId);
+                        if (customer) {
+                            customerSummary[transaction.customerId] = {
+                                name: customer.name,
+                                totalCredit: 0,
+                                totalPayment: 0
+                            };
+                        } else {
+                            return; // Skip if customer not found
+                        }
+                    }
+                    
+                    if (transaction.type === 'credit') {
+                        customerSummary[transaction.customerId].totalCredit += transaction.amount;
+                    } else {
+                        customerSummary[transaction.customerId].totalPayment += transaction.amount;
+                    }
+                });
+                
+                // Create table rows
+                Object.keys(customerSummary).forEach(customerId => {
+                    const summary = customerSummary[customerId];
+                    const remainingDebt = summary.totalCredit - summary.totalPayment;
+                    
+                    const debtDisplay = remainingDebt > 0 
+                        ? `<span class="balance-negative">Rp ${remainingDebt.toLocaleString('id-ID')}</span>` 
+                        : `<span class="balance-positive">Lunas</span>`;
+                    
+                    printContent += `
+                        <tr>
+                            <td>${summary.name}</td>
+                            <td>Rp ${summary.totalCredit.toLocaleString('id-ID')}</td>
+                            <td>Rp ${summary.totalPayment.toLocaleString('id-ID')}</td>
+                            <td>${debtDisplay}</td>
+                        </tr>
+                    `;
+                });
+                
+                if (Object.keys(customerSummary).length === 0) {
+                    printContent += '<tr><td colspan="4" class="text-center">Tidak ada data pelanggan</td></tr>';
+                }
+                
+                printContent += `
+                        </tbody>
+                    </table>
+                `;
+            }
+            
+            printContent += `
+                </body>
+                </html>
+            `;
+            
+            // Write content to new window
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            
+            // Wait for content to load before printing
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        }
+        
+        // Update Stats
+        function updateStats() {
+            document.getElementById('totalCustomers').textContent = customers.length;
+            
+            let totalCredit = 0;
+            let totalPayment = 0;
+            
+            transactions.forEach(transaction => {
+                if (transaction.type === 'credit') {
+                    totalCredit += transaction.amount;
+                } else {
+                    totalPayment += transaction.amount;
+                }
+            });
+            
+            const totalDebt = totalCredit - totalPayment;
+            
+            document.getElementById('totalCredit').textContent = `Rp ${totalCredit.toLocaleString('id-ID')}`;
+            document.getElementById('totalPayment').textContent = `Rp ${totalPayment.toLocaleString('id-ID')}`;
+            document.getElementById('totalDebt').textContent = `Rp ${totalDebt.toLocaleString('id-ID')}`;
+        }
+        
+        // Confirm Reset
+        function confirmReset() {
+            const modal = new bootstrap.Modal(document.getElementById('resetModal'));
+            modal.show();
+        }
+        
+        // Reset All Data
+        function resetAllData() {
+            customers = [];
+            transactions = [];
+            localStorage.setItem('customers', JSON.stringify(customers));
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            
+            loadCustomers();
+            
+            if (currentView === 'detail') {
+                loadTransactions();
+            } else {
+                loadSummary();
+            }
+            updateCustomerSelects();
+            updateFilterCustomerSelect();
+            updateStats();
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('resetModal'));
+            modal.hide();
+            
+            showToast('Semua data telah direset', 'warning');
+        }
+        
+        // Backup Data
+        function backupData() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(18);
+            doc.text('LAPORAN PIUTANG PELANGGAN', 105, 15, { align: 'center' });
+            
+            // Add date
+            doc.setFontSize(10);
+            doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 22, { align: 'center' });
+            
+            // Add summary stats
+            let totalCredit = 0;
+            let totalPayment = 0;
+            
+            transactions.forEach(transaction => {
+                if (transaction.type === 'credit') {
+                    totalCredit += transaction.amount;
+                } else {
+                    totalPayment += transaction.amount;
+                }
+            });
+            
+            const totalDebt = totalCredit - totalPayment;
+            
+            doc.setFontSize(12);
+            doc.text(`Total Pelanggan: ${customers.length}`, 14, 35);
+            doc.text(`Total Piutang: Rp ${totalCredit.toLocaleString('id-ID')}`, 14, 42);
+            doc.text(`Total Pembayaran: Rp ${totalPayment.toLocaleString('id-ID')}`, 14, 49);
+            doc.text(`Sisa Piutang: Rp ${totalDebt.toLocaleString('id-ID')}`, 14, 56);
+            
+            // Add customer summary
+            doc.setFontSize(14);
+            doc.text('RINGKASAN HUTANG PER PELANGGAN', 14, 70);
+            
+            const customerSummary = [];
+            customers.forEach(customer => {
+                const customerTransactions = transactions.filter(t => t.customerId === customer.id);
+                let customerCredit = 0;
+                let customerPayment = 0;
+                
+                customerTransactions.forEach(t => {
+                    if (t.type === 'credit') {
+                        customerCredit += t.amount;
+                    } else {
+                        customerPayment += t.amount;
+                    }
+                });
+                
+                const customerDebt = customerCredit - customerPayment;
+                
+                if (customerDebt > 0) {
+                    customerSummary.push([
+                        customer.name,
+                        customer.phone || '-',
+                        `Rp ${customerCredit.toLocaleString('id-ID')}`,
+                        `Rp ${customerPayment.toLocaleString('id-ID')}`,
+                        `Rp ${customerDebt.toLocaleString('id-ID')}`
+                    ]);
+                }
+            });
+            
+            // Add customer summary table
+            doc.autoTable({
+                head: [['Nama', 'Telepon', 'Total Piutang', 'Total Pembayaran', 'Sisa Piutang']],
+                body: customerSummary,
+                startY: 77,
+                theme: 'grid',
+                styles: { fontSize: 9 },
+                headStyles: { fillColor: [13, 110, 253] }
+            });
+            
+            // Add transaction details
+            const finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(14);
+            doc.text('DETAIL TRANSAKSI', 14, finalY);
+            
+            const transactionData = [];
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            transactions.forEach(transaction => {
+                const customer = customers.find(c => c.id === transaction.customerId);
+                if (!customer) return;
+                
+                const date = new Date(transaction.date).toLocaleDateString('id-ID');
+                const type = transaction.type === 'credit' ? 'Piutang' : 'Pembayaran';
+                const amount = transaction.type === 'credit' 
+                    ? `+Rp ${transaction.amount.toLocaleString('id-ID')}` 
+                    : `-Rp ${transaction.amount.toLocaleString('id-ID')}`;
+                
+                // Add attachment info to description
+                let descriptionWithAttachment = transaction.description || '-';
+                if (transaction.attachmentName) {
+                    descriptionWithAttachment += ` (Lampiran: ${transaction.attachmentName})`;
+                }
+                
+                transactionData.push([
+                    date,
+                    customer.name,
+                    transaction.division || '-',
+                    type,
+                    amount,
+                    descriptionWithAttachment
+                ]);
+            });
+            
+            // Add transaction table
+            doc.autoTable({
+                head: [['Tanggal', 'Pelanggan', 'Divisi', 'Jenis', 'Jumlah', 'Keterangan']],
+                body: transactionData,
+                startY: finalY + 7,
+                theme: 'grid',
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [13, 110, 253] }
+            });
+            
+            // Save PDF
+            doc.save(`laporan_piutang_${new Date().toISOString().split('T')[0]}.pdf`);
+            
+            showToast('Backup berhasil diunduh', 'success');
+        }
+        
+        // Logout
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout? Semua data akan tersimpan.')) {
+                // Data is already saved to localStorage
+                showToast('Logout berhasil. Semua data telah tersimpan.', 'success');
+                
+                // In a real application, this would redirect to login page
+                // For this demo, we'll just reload the page after a short delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        }
+        
+        // Show Toast Notification
+        function showToast(message, type) {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            const bgClass = {
+                'success': 'bg-success',
+                'danger': 'bg-danger',
+                'warning': 'bg-warning',
+                'info': 'bg-info'
+            }[type] || 'bg-secondary';
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white ${bgClass} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            toast.setAttribute('id', toastId);
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 3000
+            });
+            
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+    </script>
+</body>
+</html>
